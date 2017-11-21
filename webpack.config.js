@@ -1,8 +1,16 @@
 const path = require('path');
 const webpack = require('webpack'); 
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+
+const extractSass = new ExtractTextPlugin({
+    filename: "[name].css"
+});
+
 
 module.exports = {
-    entry: ["./src/script/app.js"],
+    context: __dirname + "/src",
+    entry: ["./script/app.js"],
     devtool: 'source-map',
     output: {
         path: __dirname+"/dist",
@@ -10,10 +18,15 @@ module.exports = {
     },
 
     plugins:[
-        new webpack.optimize.UglifyJsPlugin()
+        new webpack.optimize.UglifyJsPlugin(),
+        extractSass,
+        new CopyWebpackPlugin([
+            { from: '../static' }
+        ])
     ],
 
     module:{
+
         loaders:[
             {
                 loader: "babel-loader",
@@ -21,7 +34,6 @@ module.exports = {
                 include: [
                     path.resolve(__dirname, "src/script"),
                 ],
-
                 // Only run `.js` and `.jsx` files through Babel
                 test: /\.jsx?$/,
                 query: {
@@ -29,7 +41,31 @@ module.exports = {
                     presets: ['es2015'],
                   }
 
-            }
+            },
+
+            {
+                test: /\.scss$/,
+                //loaders: ['style-loader', 'css-loader', 'sass-loader']
+                loaders:extractSass.extract({
+                    use: [{
+                        loader: "css-loader"
+                    }, {
+                        loader: "sass-loader"
+                    }],
+                    // use style-loader in development
+                    fallback: "style-loader"
+                })
+            },
+
+            {
+                test: /\.(png|jpg|gif|html)$/,
+                loader:'file-loader',
+                options: {
+                    name: '[path][name].[ext]'
+                }  
+            },
+
+
         ]
     }
 };
