@@ -3,9 +3,21 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 
+
+const env = process.env.NODE_ENV
+
 const extractSass = new ExtractTextPlugin({
     filename: "[name].css"
 });
+
+function getPlugins()
+{
+    let plugins = []
+    if(env == "production") plugins.push(new webpack.optimize.UglifyJsPlugin())
+    plugins.push(extractSass)
+    plugins.push(new CopyWebpackPlugin([{ from: '../static' }]))
+    return plugins
+}
 
 
 module.exports = {
@@ -17,13 +29,7 @@ module.exports = {
         filename: "bundle.js"
     },
 
-    plugins:[
-        new webpack.optimize.UglifyJsPlugin(),
-        extractSass,
-        new CopyWebpackPlugin([
-            { from: '../static' }
-        ])
-    ],
+    plugins:getPlugins(),
 
     module:{
 
